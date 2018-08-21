@@ -21,6 +21,7 @@
 	UIColor *backgroundColor;
 	UIImageView *imageView;
     BOOL initFullscreen;
+    BOOL fillAspectRatio;
 }
 
 NSString * const TYPE_VIDEO = @"VIDEO";
@@ -34,6 +35,14 @@ NSString * const DEFAULT_IMAGE_SCALE = @"center";
 	} else {
 		shouldAutoClose = YES;
 	}
+    
+    if (![options isKindOfClass:[NSNull class]] && [options objectForKey:@"fillAspectRatio"]) {
+        fillAspectRatio = [[options objectForKey:@"shouldAutoClose"] boolValue];
+    } else {
+        fillAspectRatio = YES;
+    }
+    
+    
 	if (![options isKindOfClass:[NSNull class]] && [options objectForKey:@"bgColor"]) {
 		[self setBackgroundColor:[options objectForKey:@"bgColor"]];
 	} else {
@@ -144,7 +153,32 @@ NSString * const DEFAULT_IMAGE_SCALE = @"center";
 		// adjust imageView for rotation
 		//imageView.bounds = moviePlayer.backgroundView.bounds;
 		//imageView.frame = moviePlayer.backgroundView.frame;
-	}
+    } else {
+        
+    }
+}
+
+- (void) orientationWillChange:(NSNotification*)notification {
+    UIDeviceOrientation orientation = [[UIDevice currentDevice] orientation];
+    switch (orientation) {
+        case UIDeviceOrientationPortrait:
+        case UIDeviceOrientationPortraitUpsideDown:
+        if(fillAspectRatio) {
+            NSLog(@"fill aspect ratio");
+            [moviePlayer setVideoGravity:AVLayerVideoGravityResizeAspectFill];
+        }
+        break;
+        case UIDeviceOrientationLandscapeLeft:
+        case UIDeviceOrientationLandscapeRight:
+        [moviePlayer setVideoGravity:AVLayerVideoGravityResizeAspect];
+        break;
+        case UIDeviceOrientationFaceUp:
+        case UIDeviceOrientationUnknown:
+        case UIDeviceOrientationFaceDown:
+        break;
+        default:
+        break;
+    }
 }
 
 -(void)setImage:(NSString*)imagePath withScaleType:(NSString*)imageScaleType {
@@ -178,6 +212,12 @@ NSString * const DEFAULT_IMAGE_SCALE = @"center";
 
     [moviePlayer setPlayer:movie];
     [moviePlayer setShowsPlaybackControls:YES];
+    
+    if(fillAspectRatio) {
+        [moviePlayer setVideoGravity:AVLayerVideoGravityResizeAspectFill];
+    } else {
+        [moviePlayer setVideoGravity:AVLayerVideoGravityResizeAspect];
+    }
     if(@available(iOS 11.0, *)) { [moviePlayer setEntersFullScreenWhenPlaybackBegins:YES]; }
     
     //present modally so we get a close button
@@ -185,6 +225,8 @@ NSString * const DEFAULT_IMAGE_SCALE = @"center";
         //let's start this bitch.
         [moviePlayer.player play];
     }];
+    
+    
     
 	// Listen for playback finishing
 	[[NSNotificationCenter defaultCenter] addObserver:self
@@ -212,8 +254,16 @@ NSString * const DEFAULT_IMAGE_SCALE = @"center";
 												 name:UIDeviceOrientationDidChangeNotification
 											   object:nil];
     
-
+    
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(orientationWillChange:)
+                                                 name:UIApplicationWillChangeStatusBarOrientationNotification
+                                               object:nil];
+    
+    
 }
+
+
 
 - (void) moviePlayBackDidFinish:(NSNotification*)notification {
     NSLog(@"Playback did finish with auto close being %d, and error message being %@", shouldAutoClose, notification.userInfo);
