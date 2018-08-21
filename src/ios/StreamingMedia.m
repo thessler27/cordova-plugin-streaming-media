@@ -39,7 +39,7 @@ NSString * const DEFAULT_IMAGE_SCALE = @"center";
     if (![options isKindOfClass:[NSNull class]] && [options objectForKey:@"fillAspectRatio"]) {
         fillAspectRatio = [[options objectForKey:@"shouldAutoClose"] boolValue];
     } else {
-        fillAspectRatio = YES;
+        fillAspectRatio = NO;
     }
     
     
