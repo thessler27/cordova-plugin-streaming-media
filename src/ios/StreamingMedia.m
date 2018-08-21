@@ -29,6 +29,7 @@ NSString * const TYPE_AUDIO = @"AUDIO";
 NSString * const DEFAULT_IMAGE_SCALE = @"center";
 
 -(void)parseOptions:(NSDictionary *)options type:(NSString *) type {
+    //NSLog(@"options %@", options);
 	// Common options
 	if (![options isKindOfClass:[NSNull class]] && [options objectForKey:@"shouldAutoClose"]) {
 		shouldAutoClose = [[options objectForKey:@"shouldAutoClose"] boolValue];
@@ -37,8 +38,10 @@ NSString * const DEFAULT_IMAGE_SCALE = @"center";
 	}
     
     if (![options isKindOfClass:[NSNull class]] && [options objectForKey:@"fillAspectRatio"]) {
-        fillAspectRatio = [[options objectForKey:@"shouldAutoClose"] boolValue];
+        fillAspectRatio = [[options objectForKey:@"fillAspectRatio"] boolValue];
+        //NSLog(fillAspectRatio ? @"YES" : @"NO");
     } else {
+        //NSLog(@"===do NOT MAKE it fillllllllll");
         fillAspectRatio = NO;
     }
     
@@ -92,8 +95,6 @@ NSString * const DEFAULT_IMAGE_SCALE = @"center";
 }
 
 -(void)playVideo:(CDVInvokedUrlCommand *) command {
-	AVAudioSession *session = [AVAudioSession sharedInstance];
-	[session setCategory:AVAudioSessionCategoryPlayback error:nil];
 	[self play:command type:[NSString stringWithString:TYPE_VIDEO]];
 }
 
@@ -166,13 +167,13 @@ NSString * const DEFAULT_IMAGE_SCALE = @"center";
         case UIDeviceOrientationPortrait:
         case UIDeviceOrientationPortraitUpsideDown:
         if(fillAspectRatio) {
-            NSLog(@"fill aspect ratio");
-            [moviePlayer setVideoGravity:AVLayerVideoGravityResizeAspectFill];
+            //NSLog(@"fill aspect ratio");
+            [moviePlayer setVideoGravity:(AVLayerVideoGravityResizeAspectFill)];
         }
         break;
         case UIDeviceOrientationLandscapeLeft:
         case UIDeviceOrientationLandscapeRight:
-        [moviePlayer setVideoGravity:AVLayerVideoGravityResizeAspect];
+        [moviePlayer setVideoGravity:(AVLayerVideoGravityResizeAspect)];
         break;
         case UIDeviceOrientationFaceUp:
         case UIDeviceOrientationUnknown:
@@ -216,9 +217,11 @@ NSString * const DEFAULT_IMAGE_SCALE = @"center";
     [moviePlayer setShowsPlaybackControls:YES];
     
     if(fillAspectRatio) {
-        [moviePlayer setVideoGravity:AVLayerVideoGravityResizeAspectFill];
+        //NSLog(@"===make it fillllllllll");
+        [moviePlayer setVideoGravity:(AVLayerVideoGravityResizeAspectFill)];
     } else {
-        [moviePlayer setVideoGravity:AVLayerVideoGravityResizeAspect];
+        //NSLog(@"no no dont make it fillllllllll");
+        [moviePlayer setVideoGravity:(AVLayerVideoGravityResizeAspect)];
     }
     if(@available(iOS 11.0, *)) { [moviePlayer setEntersFullScreenWhenPlaybackBegins:YES]; }
     
